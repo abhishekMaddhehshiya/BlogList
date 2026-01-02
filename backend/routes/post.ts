@@ -7,7 +7,13 @@ postRoutes.use(authMiddleware);
 
 postRoutes.get('/get-all-posts', async (req: Request, res: Response) => {
     try {
-        const posts = await prisma.post.findMany({ where: { published: true } });
+        const posts = await prisma.post.findMany({ where: { published: true }, include: {
+            author: {
+                select: {
+                    name: true
+                }
+            }
+        } });
 
         return res.status(200).json({
             success: true,
@@ -21,11 +27,9 @@ postRoutes.get('/get-all-posts', async (req: Request, res: Response) => {
             message: "something went wrong",
         })
     }
-
-
 })
 
-postRoutes.get('/get-post/:id',authMiddleware, async (req: Request, res: Response)=>{
+postRoutes.get('/get-post/:id', async (req: Request, res: Response)=>{
     try{
         const id = Number(req.params.id);
         if(isNaN(id)){
@@ -34,7 +38,13 @@ postRoutes.get('/get-post/:id',authMiddleware, async (req: Request, res: Respons
                 message: "Invalid actions"
             })
         }
-        const post = await prisma.post.findUnique({where: {id:id}});
+        const post = await prisma.post.findUnique({where: {id:id}, include:{
+            author: {
+                select:{
+                    name: true
+                }
+            }
+        }} );
         return res.status(200).json({
             success: true,
             post
